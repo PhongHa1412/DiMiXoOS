@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đị Mi Xô OS</title>
+  <style>
+    :root {
+      --bg: #0b0d1a;
+      --bg-2: #14162a;
+      --panel: rgba(12, 15, 28, 0.78);
+      --accent: #00f0ff;
+      --accent-2: #ff4dff;
+      --text: #e8f9ff;
+      --muted: #a5b6c5;
+      --danger: #ff5c7a;
+      --success: #5cffc0;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      --glow: 0 0 12px rgba(0, 240, 255, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Arial Black", system-ui, sans-serif;
+      background: radial-gradient(circle at top, #1b2142, #0b0d1a 65%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    body.neon-mode {
+      --bg: #05050a;
+      --panel: rgba(18, 18, 28, 0.9);
+      --accent: #6effa4;
+      --accent-2: #00d4ff;
+      --text: #e1fff0;
+      --muted: #8efad5;
+      background: radial-gradient(circle at top, #0b1b1e, #030608 70%);
+    }
+
+    #os-shell {
+      width: min(92vw, 1280px);
+      height: min(92vh, 720px);
+      background: var(--bg);
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: var(--shadow);
+      border: 2px solid rgba(255, 255, 255, 0.08);
+    }
+
+    #wallpaper {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 60%),
+        radial-gradient(circle at 20% 20%, rgba(255, 0, 180, 0.25), transparent 45%),
+        radial-gradient(circle at 80% 10%, rgba(0, 255, 255, 0.2), transparent 45%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600'%3E%3Crect width='900' height='600' fill='%23101224'/%3E%3Ctext x='40' y='120' font-size='64' fill='%23ffffff' font-family='Arial Black'%3EĐị Mi Xô OS%3C/text%3E%3Ctext x='40' y='200' font-size='24' fill='%238efad5'%3Ebrainrot meme VN vibes%3C/text%3E%3Ccircle cx='720' cy='360' r='160' fill='%23ff4dff' opacity='0.28'/%3E%3Ctext x='600' y='380' font-size='80' fill='%23ffffff' font-family='Arial Black'%3E🐶%3C/text%3E%3Ctext x='560' y='460' font-size='20' fill='%23ffffff'%3EChó mascot cao bằng PC%3C/text%3E%3C/svg%3E") center/cover no-repeat;
+      filter: saturate(1.1);
+    }
+
+    .glitch {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.25;
+      background: repeating-linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.03) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+      animation: glitchMove 6s infinite linear;
+    }
+
+    @keyframes glitchMove {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+      100% { transform: translateY(0); }
+    }
+
+    #desktop {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 18px;
+    }
+
+    #desktop-icons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 14px;
+      width: 320px;
+    }
+
+    .icon {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .icon:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: var(--glow);
+    }
+
+    .icon span {
+      display: block;
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    #taskbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 54px;
+      background: linear-gradient(90deg, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 5;
+    }
+
+    #start-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: var(--glow);
+    }
+
+    #task-apps {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .task-app {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    #system-tray {
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+      align-items: center;
+    }
+
+    #start-menu {
+      position: absolute;
+      bottom: 64px;
+      left: 16px;
+      width: 260px;
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 14px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 6;
+      box-shadow: var(--shadow);
+    }
+
+    #start-menu.show {
+      display: flex;
+    }
+
+    .menu-item {
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .window {
+      position: absolute;
+      width: 360px;
+      height: 260px;
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      animation: popIn 0.25s ease;
+    }
+
+    .window.maximized {
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: calc(100% - 54px) !important;
+      border-radius: 0;
+    }
+
+    .window.minimized {
+      display: none;
+    }
+
+    @keyframes popIn {
+      from {
+        transform: scale(0.92);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .window-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 10px;
+      cursor: grab;
+    }
+
+    .window-header span {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .window-controls button {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-min { background: #ffd35c; }
+    .btn-max { background: #5cffc0; }
+    .btn-close { background: #ff5c7a; }
+
+    .window-body {
+      flex: 1;
+      padding: 12px;
+      overflow: auto;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .resize-handle {
+      position: absolute;
+      right: 4px;
+      bottom: 4px;
+      width: 16px;
+      height: 16px;
+      cursor: se-resize;
+      background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.4));
+    }
+
+    .toast-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .toast {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      animation: slideIn 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(30px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    #boot-screen {
+      position: absolute;
+      inset: 0;
+      background: #05060e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 20;
+      color: #fff;
+    }
+
+    #boot-progress {
+      width: 280px;
+      height: 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    #boot-progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.3s ease;
+    }
+
+    .terminal-output {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px;
+      border-radius: 8px;
+      height: 140px;
+      overflow-y: auto;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+    }
+
+    .terminal-input {
+      width: 100%;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.5);
+      color: var(--text);
+      margin-top: 6px;
+    }
+
+    .file-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .browser-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .browser-bar input {
+      flex: 1;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--text);
+    }
+
+    .browser-view {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px;
+      border-radius: 10px;
+      min-height: 120px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .gallery-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      animation: floaty 3s ease-in-out infinite;
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .toggle-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .shake {
+      animation: shake 0.2s linear 3;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0); }
+      25% { transform: translate(2px, -2px); }
+      50% { transform: translate(-2px, 2px); }
+      75% { transform: translate(2px, 2px); }
+      100% { transform: translate(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="os-shell">
+    <div id="wallpaper"></div>
+    <div class="glitch"></div>
+    <div id="desktop">
+      <div id="desktop-icons"></div>
+      <div class="toast-container" id="toasts"></div>
+    </div>
+
+    <div id="start-menu"></div>
+
+    <div id="taskbar">
+      <button id="start-btn">🧠 Start</button>
+      <div id="task-apps"></div>
+      <div id="system-tray">
+        <span id="tray-time">00:00</span>
+        <button class="toggle-btn" id="theme-toggle">Neon</button>
+        <button class="toggle-btn" id="music-toggle">Music</button>
+      </div>
+    </div>
+
+    <div id="boot-screen">
+      <div style="font-size: 56px;">🐶</div>
+      <div style="font-size: 24px; font-weight: 800;">Đị Mi Xô OS</div>
+      <div>Đang nạp meme brainrot...</div>
+      <div id="boot-progress"><span></span></div>
+    </div>
+  </div>
+
+  <script>
+    const apps = [
+      { id: "dog-control", name: "🐶 Chó Điều Khiển", icon: "🐶", group: "System" },
+      { id: "recycle-bin", name: "🗑 Bã Mía Recycle Bin", icon: "🗑", group: "System" },
+      { id: "kho-ga", name: "🍗 Khô Gà Manager", icon: "🍗", group: "Meme" },
+      { id: "tra-tu-tay", name: "🧃 Trà Từ Tay Player", icon: "🧃", group: "Media" },
+      { id: "oii", name: "🤯 Ộ i i Simulator", icon: "🤯", group: "Meme" },
+      { id: "brainrot-gallery", name: "🧠 Brainrot Gallery", icon: "🧠", group: "Media" },
+      { id: "terminal", name: "💻 Meme Terminal", icon: "💻", group: "Dev" },
+      { id: "browser", name: "🌐 Fake Browser", icon: "🌐", group: "Net" },
+      { id: "file-manager", name: "📁 Bã Mía Files", icon: "📁", group: "System" },
+      { id: "meme-board", name: "📌 Meme Board", icon: "📌", group: "Meme" },
+      { id: "glitch-radio", name: "📻 Glitch Radio", icon: "📻", group: "Media" }
+    ];
+
+    const internalPages = {
+      home: `
+        <h3>Trang Meme Nội Bộ</h3>
+        <p>Xin chào, đây là cổng thông tin brainrot nội bộ của Đị Mi Xô OS.</p>
+        <ul>
+          <li>🧃 Trà Từ Tay Streaming</li>
+          <li>🍗 Khô Gà supply chain</li>
+          <li>🐶 Dữ liệu chó điều khiển</li>
+        </ul>
+      `,
+      doge: `
+        <h3>🐶 Chó Mascot Log</h3>
+        <p>Con chó cao bằng bộ PC đã bật chế độ bảo vệ meme.</p>
+        <p>Thông điệp hôm nay: "Gâu gâu = bảo mật"</p>
+      `,
+      chaos: `
+        <h3>Glitch Zone</h3>
+        <p>Hãy thả trôi trong dòng chảy ộ i i và bã mía.</p>
+        <div style="font-size:40px;">💥✨🌪️</div>
+      `
+    };
+
+    const defaultFS = {
+      files: [
+        { name: "meme-guide.txt", content: "Đọc xong thì bã mía vẫn còn." },
+        { name: "oii.txt", content: "Ộ i i i i i" }
+      ],
+      trash: []
+    };
+
+    const state = {
+      windows: {},
+      zIndex: 3,
+      audioCtx: null,
+      backgroundOsc: null
+    };
+
+    const desktopIcons = document.getElementById("desktop-icons");
+    const taskApps = document.getElementById("task-apps");
+    const startMenu = document.getElementById("start-menu");
+    const startBtn = document.getElementById("start-btn");
+    const toasts = document.getElementById("toasts");
+    const themeToggle = document.getElementById("theme-toggle");
+    const musicToggle = document.getElementById("music-toggle");
+
+    const fsStoreKey = "dimi_fs";
+
+    const loadFS = () => {
+      const raw = localStorage.getItem(fsStoreKey);
+      if (!raw) return structuredClone(defaultFS);
+      try {
+        return JSON.parse(raw);
+      } catch (error) {
+        return structuredClone(defaultFS);
+      }
+    };
+
+    const saveFS = (data) => {
+      localStorage.setItem(fsStoreKey, JSON.stringify(data));
+    };
+
+    let fsData = loadFS();
+
+    const notify = (message) => {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      toasts.appendChild(toast);
+      setTimeout(() => toast.remove(), 3200);
+    };
+
+    const playClickSound = () => {
+      if (!state.audioCtx) {
+        state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const ctx = state.audioCtx;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.value = 580;
+      gain.gain.value = 0.05;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.06);
+    };
+
+    const toggleBackgroundMusic = () => {
+      if (!state.audioCtx) {
+        state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const ctx = state.audioCtx;
+      if (state.backgroundOsc) {
+        state.backgroundOsc.stop();
+        state.backgroundOsc = null;
+        notify("Tắt nhạc nền 📴");
+        return;
+      }
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 220;
+      gain.gain.value = 0.03;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      state.backgroundOsc = osc;
+      notify("Bật nhạc nền 🧃");
+    };
+
+    const updateClock = () => {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      document.getElementById("tray-time").textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    };
+
+    const renderDesktopIcons = () => {
+      desktopIcons.innerHTML = "";
+      apps.slice(0, 8).forEach((app) => {
+        const icon = document.createElement("div");
+        icon.className = "icon";
+        icon.innerHTML = `<div style="font-size:22px;">${app.icon}</div><span>${app.name}</span>`;
+        icon.addEventListener("click", () => openApp(app.id));
+        desktopIcons.appendChild(icon);
+      });
+    };
+
+    const renderStartMenu = () => {
+      startMenu.innerHTML = "<strong>Ứng dụng brainrot</strong>";
+      apps.forEach((app) => {
+        const item = document.createElement("div");
+        item.className = "menu-item";
+        item.innerHTML = `<span>${app.name}</span><span>${app.group}</span>`;
+        item.addEventListener("click", () => openApp(app.id));
+        startMenu.appendChild(item);
+      });
+    };
+
+    const setActiveWindow = (win) => {
+      state.zIndex += 1;
+      win.style.zIndex = state.zIndex;
+    };
+
+    const createWindow = (appId, title, contentBuilder) => {
+      const win = document.createElement("div");
+      win.className = "window";
+      win.style.top = `${80 + Math.random() * 140}px`;
+      win.style.left = `${140 + Math.random() * 180}px`;
+      win.style.zIndex = ++state.zIndex;
+
+      const header = document.createElement("div");
+      header.className = "window-header";
+      header.innerHTML = `<span>${title}</span>`;
+
+      const controls = document.createElement("div");
+      controls.className = "window-controls";
+      const btnMin = document.createElement("button");
+      btnMin.className = "btn-min";
+      const btnMax = document.createElement("button");
+      btnMax.className = "btn-max";
+      const btnClose = document.createElement("button");
+      btnClose.className = "btn-close";
+      controls.append(btnMin, btnMax, btnClose);
+      header.appendChild(controls);
+
+      const body = document.createElement("div");
+      body.className = "window-body";
+      contentBuilder(body);
+
+      const resize = document.createElement("div");
+      resize.className = "resize-handle";
+
+      win.append(header, body, resize);
+      document.getElementById("desktop").appendChild(win);
+
+      const taskBtn = document.createElement("div");
+      taskBtn.className = "task-app";
+      taskBtn.textContent = title;
+      taskBtn.addEventListener("click", () => {
+        win.classList.toggle("minimized");
+        setActiveWindow(win);
+      });
+      taskApps.appendChild(taskBtn);
+
+      const destroy = () => {
+        win.remove();
+        taskBtn.remove();
+        delete state.windows[appId];
+      };
+
+      btnClose.addEventListener("click", destroy);
+      btnMin.addEventListener("click", () => {
+        win.classList.add("minimized");
+      });
+
+      btnMax.addEventListener("click", () => {
+        win.classList.toggle("maximized");
+        setActiveWindow(win);
+      });
+
+      let dragData = null;
+      header.addEventListener("mousedown", (event) => {
+        dragData = {
+          offsetX: event.clientX - win.offsetLeft,
+          offsetY: event.clientY - win.offsetTop
+        };
+        header.style.cursor = "grabbing";
+        setActiveWindow(win);
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        if (!dragData || win.classList.contains("maximized")) return;
+        win.style.left = `${event.clientX - dragData.offsetX}px`;
+        win.style.top = `${event.clientY - dragData.offsetY}px`;
+      });
+
+      document.addEventListener("mouseup", () => {
+        dragData = null;
+        header.style.cursor = "grab";
+      });
+
+      let resizeData = null;
+      resize.addEventListener("mousedown", (event) => {
+        resizeData = {
+          width: win.offsetWidth,
+          height: win.offsetHeight,
+          x: event.clientX,
+          y: event.clientY
+        };
+        event.stopPropagation();
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        if (!resizeData || win.classList.contains("maximized")) return;
+        const dx = event.clientX - resizeData.x;
+        const dy = event.clientY - resizeData.y;
+        win.style.width = `${Math.max(260, resizeData.width + dx)}px`;
+        win.style.height = `${Math.max(180, resizeData.height + dy)}px`;
+      });
+
+      document.addEventListener("mouseup", () => {
+        resizeData = null;
+      });
+
+      win.addEventListener("mousedown", () => setActiveWindow(win));
+      state.windows[appId] = win;
+      return win;
+    };
+
+    const openApp = (appId) => {
+      playClickSound();
+      if (state.windows[appId]) {
+        state.windows[appId].classList.remove("minimized");
+        setActiveWindow(state.windows[appId]);
+        return;
+      }
+
+      switch (appId) {
+        case "dog-control":
+          createWindow(appId, "🐶 Chó Điều Khiển", (body) => {
+            body.innerHTML = `
+              <h3>Trung tâm điều khiển chó</h3>
+              <p>Con chó cao bằng PC đang canh meme và bảo vệ bã mía.</p>
+              <button class="toggle-btn" id="dog-talk">Bấm để nghe chó nói</button>
+              <div id="dog-message" style="margin-top:10px; font-size:12px;"></div>
+            `;
+            body.querySelector("#dog-talk").addEventListener("click", () => {
+              const phrases = [
+                "Gâu gâu, mở khóa ộ i i!",
+                "Chó đã cập nhật hệ thống bã mía.",
+                "Chỉ số meme hôm nay: 999%",
+                "Khô gà đang ở chế độ an toàn."
+              ];
+              body.querySelector("#dog-message").textContent = phrases[Math.floor(Math.random() * phrases.length)];
+              notify("Chó vừa spam hệ thống!");
+            });
+          });
+          break;
+        case "recycle-bin":
+          createWindow(appId, "🗑 Bã Mía Recycle Bin", (body) => {
+            const renderTrash = () => {
+              body.innerHTML = `<h3>Thùng bã mía</h3>`;
+              if (fsData.trash.length === 0) {
+                body.innerHTML += `<p>Trống trơn, không còn bã mía nào.</p>`;
+              } else {
+                const list = document.createElement("div");
+                list.className = "file-list";
+                fsData.trash.forEach((file, index) => {
+                  const item = document.createElement("div");
+                  item.className = "file-item";
+                  item.innerHTML = `<span>${file.name}</span><button class="toggle-btn">Khôi phục</button>`;
+                  item.querySelector("button").addEventListener("click", () => {
+                    fsData.files.push(file);
+                    fsData.trash.splice(index, 1);
+                    saveFS(fsData);
+                    renderTrash();
+                  });
+                  list.appendChild(item);
+                });
+                body.appendChild(list);
+              }
+              const clearBtn = document.createElement("button");
+              clearBtn.className = "toggle-btn";
+              clearBtn.textContent = "Xóa sạch bã mía";
+              clearBtn.addEventListener("click", () => {
+                fsData.trash = [];
+                saveFS(fsData);
+                renderTrash();
+                notify("Đã đốt hết bã mía!");
+              });
+              body.appendChild(clearBtn);
+            };
+            renderTrash();
+          });
+          break;
+        case "kho-ga":
+          createWindow(appId, "🍗 Khô Gà Manager", (body) => {
+            body.innerHTML = `
+              <h3>Kho gà đè tem</h3>
+              <p>Quản lý supply chain meme của khô gà.</p>
+              <ul>
+                <li>🍗 Item: Khô gà siêu cay</li>
+                <li>🧪 Item: Tem kiểm định meme</li>
+                <li>📦 Item: Thùng bã mía phụ kiện</li>
+              </ul>
+              <button class="toggle-btn">Tăng nhiệt meme</button>
+            `;
+            body.querySelector("button").addEventListener("click", () => {
+              notify("Kho gà tăng nhiệt độ ộ i i");
+            });
+          });
+          break;
+        case "tra-tu-tay":
+          createWindow(appId, "🧃 Trà Từ Tay Player", (body) => {
+            body.innerHTML = `
+              <h3>Trà Từ Tay Player</h3>
+              <p>Nhạc nền brainrot lofi.</p>
+              <button class="toggle-btn" id="play-music">Bật/Tắt nhạc nền</button>
+              <p style="font-size:12px;">Tip: Bạn có thể bật nhạc từ system tray.</p>
+            `;
+            body.querySelector("#play-music").addEventListener("click", toggleBackgroundMusic);
+          });
+          break;
+        case "oii":
+          createWindow(appId, "🤯 Ộ i i Simulator", (body) => {
+            body.innerHTML = `
+              <h3>ỒI I I I</h3>
+              <p>Bấm để phát âm thanh và rung màn hình.</p>
+              <button class="toggle-btn" id="oii-btn">Ộ i i!!!</button>
+            `;
+            body.querySelector("#oii-btn").addEventListener("click", () => {
+              playClickSound();
+              document.getElementById("os-shell").classList.add("shake");
+              setTimeout(() => document.getElementById("os-shell").classList.remove("shake"), 600);
+              notify("Ộ i i đã lan tỏa!");
+            });
+          });
+          break;
+        case "brainrot-gallery":
+          createWindow(appId, "🧠 Brainrot Gallery", (body) => {
+            body.innerHTML = `
+              <h3>Gallery meme động</h3>
+              <div class="gallery-grid">
+                <div class="gallery-card">💥 Bã mía blast</div>
+                <div class="gallery-card">🐶 Doge glitch</div>
+                <div class="gallery-card">🍗 Khô gà drip</div>
+                <div class="gallery-card">🧃 Trà flow</div>
+              </div>
+            `;
+          });
+          break;
+        case "terminal":
+          createWindow(appId, "💻 Meme Terminal", (body) => {
+            body.innerHTML = `
+              <div class="terminal-output" id="terminal-output"></div>
+              <input class="terminal-input" id="terminal-input" placeholder="gõ help để xem lệnh" />
+            `;
+            const output = body.querySelector("#terminal-output");
+            const input = body.querySelector("#terminal-input");
+            const print = (text) => {
+              output.innerHTML += `<div>${text}</div>`;
+              output.scrollTop = output.scrollHeight;
+            };
+            print("Chào mừng đến Meme Terminal. gõ help nhé!");
+            input.addEventListener("keydown", (event) => {
+              if (event.key !== "Enter") return;
+              const command = input.value.trim();
+              input.value = "";
+              print(`> ${command}`);
+              const [cmd, ...rest] = command.split(" ");
+              const arg = rest.join(" ");
+              switch (cmd) {
+                case "help":
+                  print("help | ls | open <app> | clear | about");
+                  break;
+                case "ls":
+                  print(`Files: ${fsData.files.map((file) => file.name).join(", ") || "(trống)"}`);
+                  break;
+                case "open":
+                  if (arg) {
+                    const target = apps.find((app) => app.id.includes(arg) || app.name.toLowerCase().includes(arg));
+                    if (target) {
+                      openApp(target.id);
+                      print(`Đã mở ${target.name}`);
+                    } else {
+                      print("Không thấy app đó.");
+                    }
+                  } else {
+                    print("Hãy nhập tên app.");
+                  }
+                  break;
+                case "clear":
+                  output.innerHTML = "";
+                  break;
+                case "about":
+                  print("Đị Mi Xô OS - phiên bản brainrot meme VN.");
+                  break;
+                default:
+                  print("Lệnh không hợp lệ.");
+              }
+            });
+          });
+          break;
+        case "browser":
+          createWindow(appId, "🌐 Fake Browser", (body) => {
+            body.innerHTML = `
+              <div class="browser-bar">
+                <input id="browser-input" placeholder="home / doge / chaos" value="home" />
+                <button class="toggle-btn" id="browser-go">Go</button>
+              </div>
+              <div class="browser-view" id="browser-view"></div>
+            `;
+            const input = body.querySelector("#browser-input");
+            const view = body.querySelector("#browser-view");
+            const renderPage = () => {
+              const key = input.value.trim().toLowerCase();
+              view.innerHTML = internalPages[key] || "<p>404 brainrot not found.</p>";
+            };
+            body.querySelector("#browser-go").addEventListener("click", renderPage);
+            renderPage();
+          });
+          break;
+        case "file-manager":
+          createWindow(appId, "📁 Bã Mía Files", (body) => {
+            const renderFiles = () => {
+              body.innerHTML = `<h3>File system giả lập</h3>`;
+              const list = document.createElement("div");
+              list.className = "file-list";
+              fsData.files.forEach((file, index) => {
+                const item = document.createElement("div");
+                item.className = "file-item";
+                item.innerHTML = `<span>${file.name}</span><button class="toggle-btn">Xóa</button>`;
+                item.querySelector("button").addEventListener("click", () => {
+                  fsData.trash.push(file);
+                  fsData.files.splice(index, 1);
+                  saveFS(fsData);
+                  renderFiles();
+                  notify(`Đã đưa ${file.name} vào bã mía.`);
+                });
+                list.appendChild(item);
+              });
+              body.appendChild(list);
+
+              const createArea = document.createElement("div");
+              createArea.style.marginTop = "10px";
+              createArea.innerHTML = `
+                <input id="new-file" placeholder="tên file.txt" class="terminal-input" />
+                <button class="toggle-btn" id="add-file">Tạo file</button>
+              `;
+              body.appendChild(createArea);
+              body.querySelector("#add-file").addEventListener("click", () => {
+                const name = body.querySelector("#new-file").value.trim();
+                if (!name) return;
+                fsData.files.push({ name, content: "Nội dung bã mía" });
+                saveFS(fsData);
+                renderFiles();
+              });
+            };
+            renderFiles();
+          });
+          break;
+        case "meme-board":
+          createWindow(appId, "📌 Meme Board", (body) => {
+            body.innerHTML = `
+              <h3>Bảng thông báo meme</h3>
+              <p>Châm ngôn hôm nay: "bã mía không bỏ đi, chỉ chuyển dạng".</p>
+              <ul>
+                <li>🧃 Trà từ tay đang on sale</li>
+                <li>🍗 Khô gà update phiên bản 2.0</li>
+                <li>🐶 Mascot chạy vòng trong boot screen</li>
+              </ul>
+            `;
+          });
+          break;
+        case "glitch-radio":
+          createWindow(appId, "📻 Glitch Radio", (body) => {
+            body.innerHTML = `
+              <h3>Glitch Radio</h3>
+              <p>Playlist nội bộ: neon glitch & brainrot beats.</p>
+              <button class="toggle-btn" id="radio-btn">Bật hiệu ứng glitch</button>
+            `;
+            body.querySelector("#radio-btn").addEventListener("click", () => {
+              document.querySelector(".glitch").style.opacity = "0.45";
+              notify("Glitch overload activated!");
+              setTimeout(() => {
+                document.querySelector(".glitch").style.opacity = "0.25";
+              }, 1200);
+            });
+          });
+          break;
+        default:
+          notify("App chưa có nội dung.");
+      }
+    };
+
+    startBtn.addEventListener("click", () => {
+      startMenu.classList.toggle("show");
+      playClickSound();
+    });
+
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("neon-mode");
+      notify("Đổi chế độ Dark/Neon");
+    });
+
+    musicToggle.addEventListener("click", toggleBackgroundMusic);
+
+    document.addEventListener("click", (event) => {
+      if (!startMenu.contains(event.target) && event.target !== startBtn) {
+        startMenu.classList.remove("show");
+      }
+    });
+
+    const boot = () => {
+      const bar = document.querySelector("#boot-progress span");
+      let progress = 0;
+      const timer = setInterval(() => {
+        progress += Math.random() * 22;
+        bar.style.width = `${Math.min(progress, 100)}%`;
+        if (progress >= 100) {
+          clearInterval(timer);
+          document.getElementById("boot-screen").style.display = "none";
+          notify("Đị Mi Xô OS sẵn sàng!");
+        }
+      }, 200);
+    };
+
+    renderDesktopIcons();
+    renderStartMenu();
+    updateClock();
+    setInterval(updateClock, 1000);
+    boot();
+  </script>
+</body>
+</html>
